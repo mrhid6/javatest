@@ -29,7 +29,7 @@
 
 package net.javacity;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
@@ -38,11 +38,13 @@ import static org.lwjgl.opengl.GL11.GL_FRONT;
 import static org.lwjgl.opengl.GL11.GL_LINE;
 import static org.lwjgl.opengl.GL11.GL_POINT;
 import static org.lwjgl.opengl.GL11.GL_POLYGON_MODE;
+import static org.lwjgl.opengl.GL11.GL_POLYGON_SMOOTH;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.glCallList;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.glDeleteLists;
+import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glGetError;
 import static org.lwjgl.opengl.GL11.glGetInteger;
@@ -50,8 +52,6 @@ import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glPointSize;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
 import static org.lwjgl.opengl.GL11.glScalef;
-import static org.lwjgl.opengl.GL20.glDeleteProgram;
-import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,7 +59,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import net.javacity.lib.EulerCamera;
-import net.javacity.lib.ShaderLoader;
 import net.javacity.world.Map;
 
 import org.lwjgl.LWJGLException;
@@ -71,13 +70,6 @@ import org.lwjgl.util.glu.GLU;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
-/**
- * A 3D terrain loaded from a height-map and a lookup texture. Press 'L' to reload the shader and texture files. Press
- * 'P' to switch between normal, point, and wire-frame mode. Press 'F' to flatten the terrain. Click here for an image:
- * https://twitter.com/i/#!/CodingUniverse/media/slideshow?url=pic.twitter.com%2FDgMdZ5jm.
- *
- * @author Oskar Veerhoek
- */
 public class Start {
 
 	private static final String WINDOW_TITLE = "Terrain!";
@@ -85,25 +77,7 @@ public class Start {
 	private static final float ASPECT_RATIO = (float) WINDOW_DIMENSIONS[0] / (float) WINDOW_DIMENSIONS[1];
 	private static final EulerCamera camera = new EulerCamera.Builder().setPosition(-5.4f, 19.2f,
 			33.2f).setRotation(30, 61, 0).setAspectRatio(ASPECT_RATIO).setFieldOfView(60).build();
-	/**
-	 * The shader program that will use the lookup texture and the height-map's vertex data to draw the terrain.
-	 */
-	private static int shaderProgram;
-	/**
-	 * The texture that will be used to find out which colours correspond to which heights.
-	 */
-	/**
-	 * The display list that will contain the height-map's vertex data.
-	 */
-	private static int heightmapDisplayList;
-	/**
-	 * The points of the height. The first dimension represents the z-coordinate. The second dimension represents the
-	 * x-coordinate. The float value represents the height.
-	 */
-	private static float[][] data;
-	/**
-	 * Whether the terrain should vary in height or be displayed on a grid.
-	 */
+
 	private static boolean flatten = false;
 	
 	static Map worldMap;
@@ -111,16 +85,15 @@ public class Start {
 	public static Texture mapTexture;
 
 	private static void render() throws FileNotFoundException, IOException {
-		// Clear the pixels on the screen and clear the contents of the depth buffer (3D contents of the scene)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// Reset any translations the camera made last frame update
+
 		glLoadIdentity();
-		// Apply the camera position and orientation to the scene
+
 		camera.applyTranslations();
 		if (flatten) {
 			glScalef(1, 0, 1);
 		}
-		// Render the heightmap using the shaders that are being used
+
 		glDisable(GL_POLYGON_SMOOTH);
 		mapTexture.bind();
 		glCallList(worldMap.mapList);
@@ -135,26 +108,14 @@ public class Start {
 					flatten = !flatten;
 				}
 				if (Keyboard.getEventKey() == Keyboard.KEY_L) {
-					// Reload the shaders and the heightmap data.
-					/*glUseProgram(0);
-					glDeleteProgram(shaderProgram);
-					glActiveTexture(GL_TEXTURE0);
-					glBindTexture(GL_TEXTURE_2D, 0);
-					glActiveTexture(GL_TEXTURE1);
-					glBindTexture(GL_TEXTURE_2D, 0);
-					glDeleteTextures(lookupTexture);
-					glDeleteTextures(textureTerrain);*/
-					//setUpShaders();
 					try {
 						mapTexture = loadTexture("ground.png");
 						worldMap.loadMap();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
 				if (Keyboard.getEventKey() == Keyboard.KEY_P) {
-					// Switch between normal mode, point mode, and wire-frame mode.
 					int polygonMode = glGetInteger(GL_POLYGON_MODE);
 					if (polygonMode == GL_LINE) {
 						glPolygonMode(GL_FRONT, GL_FILL);
@@ -182,14 +143,7 @@ public class Start {
 		return texture;
 	}
 
-	private static void setUpShaders() {
-		shaderProgram = ShaderLoader.loadShaderPair("res/shaders/textured_landscape.vs", "res/shaders/textured_landscape.fs");
-		glUseProgram(shaderProgram);
-	}
-
 	private static void cleanUp(boolean asCrash) {
-		glUseProgram(0);
-		glDeleteProgram(shaderProgram);
 		glDeleteLists(worldMap.mapList, 1);
 		System.err.println(GLU.gluErrorString(glGetError()));
 		Display.destroy();
@@ -202,12 +156,12 @@ public class Start {
 
 	private static void setUpStates() {
 		camera.applyOptimalStates();
+		
 		glPointSize(2);
-		// Enable the sorting of shapes from far to near
+		
 		glEnable(GL_DEPTH_TEST);
-		// Set the background to a blue sky colour
 		glClearColor(0, 0.75f, 1, 1);
-		// Remove the back (bottom) faces of shapes for performance
+		
 		glEnable(GL_CULL_FACE);
 
 		glEnable(GL_TEXTURE_2D);
@@ -241,8 +195,6 @@ public class Start {
 	public static void main(String[] args) {
 		setUpDisplay();
 		setUpStates();
-		//setUpHeightmap();
-		//setUpShaders();
 		
 		setUpMatrices();
 		worldMap = new Map();
@@ -252,7 +204,6 @@ public class Start {
 			
 			enterGameLoop();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		cleanUp(false);
