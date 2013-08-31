@@ -1,0 +1,30 @@
+#
+# test2.mtl
+#
+
+newmtl Material0
+illum 2
+Kd 0.800000 0.800000 0.800000
+Ka 0.200000 0.200000 0.200000
+Ks 0.000000 0.000000 0.000000
+Ke 0.364706 0.364706 0.364706
+Ns 0.000000
+map_Kd ..\..\Documents\Game Dev\eclipse\JavaCity\res\mesh\axe.jpg
+
+newmtl Material1
+illum 2
+Kd 0.800000 0.800000 0.800000
+Ka 0.200000 0.200000 0.200000
+Ks 0.000000 0.000000 0.000000
+Ke 0.305882 0.305882 0.305882
+Ns 0.000000
+map_Kd C:/work packs/fantasy 1/dwarf/animated/dwarf.jpg
+
+newmtl Material2
+illum 2
+Kd 0.800000 0.800000 0.800000
+Ka 0.200000 0.200000 0.200000
+Ks 0.000000 0.000000 0.000000
+Ke 0.317647 0.317647 0.317647
+Ns 0.000000
+map_Kd ..\..\Documents\Game Dev\eclipse\JavaCity\res\mesh\dwarf2.jpg

@@ -1,4 +1,4 @@
-package net.javacity.lib;
+package net.javacity.lib.managers;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
