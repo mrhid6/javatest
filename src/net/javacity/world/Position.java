@@ -11,7 +11,9 @@ public class Position {
 		this.y = y;
 		this.z = z;
 	}
-
+	public Position copy(){
+		return new Position(x, y, z);
+	}
 	public float getX() {
 		return x;
 	}

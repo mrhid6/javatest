@@ -5,10 +5,12 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
 import net.javacity.animation.AnimatedModel;
+import net.javacity.animation.AnimationTime;
 import net.javacity.lib.ResourceLocation;
+import net.javacity.lib.managers.Animations;
 import net.javacity.world.Position;
 
-public class Dwarf {
+public class Dwarf extends PlayableModel{
 	
 	public AnimatedModel model;
 	public AnimatedModel axe;
@@ -19,6 +21,8 @@ public class Dwarf {
 	ResourceLocation texture2;
 	
 	public Dwarf(Position location) {
+		super(location);
+		
 		texture	= new ResourceLocation("res/mesh/dwarf2.jpg");
 		texture2	= new ResourceLocation("res/mesh/axe.jpg");
 		
@@ -29,13 +33,10 @@ public class Dwarf {
 		model.init();
 		axe.init();
 		
-		axe.syncAnimationTime(model.getAnimationTime());
+		axe.setAnimationTime(model.getAnimationTime());
 	}
 	
-	public Position getLocation() {
-		return location;
-	}
-	
+	@Override
 	public void render(){
 		GL11.glPushMatrix();{
 			
@@ -50,7 +51,7 @@ public class Dwarf {
 			//accMatrix.m13 = accInfo[0].y;
 			//accMatrix.m23 = accInfo[0].z;
 			//System.out.println(-accInfo[0].x);
-			GL11.glTranslatef(-accInfo[0].x,accInfo[0].y,-accInfo[0].z);
+			//GL11.glTranslatef(-accInfo[0].x,accInfo[0].y,-accInfo[0].z);
 			
 			//GL11.glRotatef( accInfo[1].x, 1, 0, 0);
 			//GL11.glRotatef( accInfo[1].y, 0, 1, 0);
@@ -61,11 +62,21 @@ public class Dwarf {
 		}GL11.glPopMatrix();
 	}
 	
+	@Override
 	public void updateEntity(){
 		model.animate();
-		axe.syncAnimationTime(model.getAnimationTime());
+		axe.setAnimationTime(model.getAnimationTime());
 		
+	}
+
+	public void setAnimation(AnimationTime animation) {
+		model.setAnimationTime(animation);
 		
+	}
+	
+	@Override
+	public void setWalkAnimation() {
+		setAnimation(Animations.getAnimation("dwarf_walk"));
 	}
 	
 }

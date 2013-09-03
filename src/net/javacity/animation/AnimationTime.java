@@ -13,7 +13,7 @@ public class AnimationTime {
 	private float currentFrame = 0;
 	private int lastAnimationTick;
 	
-	public AnimationTime(float startTime, float endTime, float timeToNextFrame, int startFrame, int endFrame) {
+	public AnimationTime(float startTime, float endTime, float timeToNextFrame) {
 		super();
 		
 		this.startTime = startTime;
@@ -27,6 +27,17 @@ public class AnimationTime {
 		this.timeToNextFrame = timeToNextFrame;
 	}
 	
+	
+	
+	@Override
+	public String toString() {
+		return "AnimationTime [startTime=" + startTime + ", timeToNextFrame="
+				+ timeToNextFrame + ", startFrame=" + startFrame
+				+ ", endFrame=" + endFrame + "]";
+	}
+
+
+
 	public void update(){
 		lastAnimationTick++;
 	}
@@ -38,6 +49,10 @@ public class AnimationTime {
 
 	public float getCurrentTime() {
 		return currentTime;
+	}
+	
+	public AnimationTime copy(){
+		return new AnimationTime(startTime,endTime,timeToNextFrame);
 	}
 	
 	public float interval(){
@@ -55,14 +70,9 @@ public class AnimationTime {
 	}
 	
 	public void loopAnimation(){
-		currentFrame++;
-		if(currentFrame>endFrame){
-			//System.out.println(currentTime);
-			currentFrame=startFrame;
-			currentTime = startTime;
-		}
-		
-		currentTime = startTime+(timeToNextFrame*currentFrame);
+		currentTime += timeToNextFrame;
+		//System.out.println(currentTime);
+		if(currentTime >= endTime) currentTime = startTime;
 		
 	}
 }

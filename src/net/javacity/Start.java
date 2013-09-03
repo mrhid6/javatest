@@ -1,9 +1,7 @@
 
 package net.javacity;
 
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.GL_FILL;
 import static org.lwjgl.opengl.GL11.GL_FRONT;
@@ -11,29 +9,29 @@ import static org.lwjgl.opengl.GL11.GL_LINE;
 import static org.lwjgl.opengl.GL11.GL_POINT;
 import static org.lwjgl.opengl.GL11.GL_POLYGON_MODE;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glGetError;
 import static org.lwjgl.opengl.GL11.glGetInteger;
-import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glPointSize;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
-import static org.lwjgl.opengl.GL11.glScalef;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 
 import net.javacity.animation.AnimatedModel;
+import net.javacity.gui.GuiScreen;
 import net.javacity.lib.EulerCamera;
 import net.javacity.lib.Mesh;
 import net.javacity.lib.ResourceLocation;
+import net.javacity.lib.managers.Animations;
+import net.javacity.lib.managers.AssetManager;
 import net.javacity.lib.managers.ObjectLoader;
+import net.javacity.lib.managers.ShaderLoader;
 import net.javacity.lib.managers.TextureManager;
 import net.javacity.models.Dwarf;
+import net.javacity.player.Player;
 import net.javacity.player.Skill;
 import net.javacity.world.Map;
 import net.javacity.world.Position;
@@ -61,42 +59,43 @@ public class Start {
 
 	private static Dwarf d2;
 	
-	private static boolean flatten = false;
 	private static Mesh lamp;
+	
+	public static Player thePlayer;
 
-	private static Texture tex2;
-
-	private static final String WINDOW_TITLE = "Terrain!";
+	private static final String WINDOW_TITLE = "Working Title!";
 
 	static AnimatedModel acc;
 
 	static Mesh mesh;
 
 	static AnimatedModel model;
-
-	static float modelPitch = 0;
-
-	static Vector3f modelRot;
-	 
-	static float modelYaw = 0;
 	
 	static Texture tex;
 	static float timeToNextFrame = -1;
 	
 	static Map worldMap;
 	
+	public static GuiScreen gui;
 	
 	public Start(){
+		
 		setUpDisplay();
+		setUpShaders();
 		setUpStates();
-
+		
 		setUpMatrices();
 
 		try {
-			initGL();
 			
+			gui = new GuiScreen(WINDOW_DIMENSIONS[0], WINDOW_DIMENSIONS[1]);
+			AssetManager.loadAssets();
+			initGL();
 			d = new Dwarf(new Position(0, 0, 0));
-			d2 = new Dwarf(new Position(30, 0, 0));
+			thePlayer = new Player(d, new Position(0, 0, 0));
+			
+			d2 = new Dwarf(new Position(0, 0, 0));
+			d2.setAnimation(Animations.getAnimation("dwarf_end"));
 			
 			lamp = ObjectLoader.loadobject(new BufferedReader(new FileReader(new File("res/mesh/lamp.obj"))));
 			lamp.applyTexture(new ResourceLocation("res/textures/lamp.png"));
@@ -134,7 +133,7 @@ public class Start {
 		//GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glMatrixMode(GL11.GL_PROJECTION); // Select The Projection Matrix
 		GL11.glLoadIdentity(); // Reset The Projection Matrix
-		GLU.gluPerspective(45.0f, ((float) WINDOW_DIMENSIONS[0] / (float) WINDOW_DIMENSIONS[1]), 0.1f, 100); // Calculate The Aspect Ratio Of The Window
+		GLU.gluPerspective(45.0f, ((float) WINDOW_DIMENSIONS[0] / (float) WINDOW_DIMENSIONS[1]), 0.1f, 1000); // Calculate The Aspect Ratio Of The Window
 		GL11.glMatrixMode(GL11.GL_MODELVIEW); // Select The Modelview Matrix
 		GL11.glLoadIdentity(); // Reset The Modelview Matrix
 
@@ -154,9 +153,7 @@ public class Start {
 	private static void input() {
 		while (Keyboard.next()) {
 			if (Keyboard.getEventKeyState()) {
-				if (Keyboard.isKeyDown(Keyboard.KEY_F)) {
-					flatten = !flatten;
-				}
+				
 				if (Keyboard.getEventKey() == Keyboard.KEY_L) {
 					
 				}
@@ -175,6 +172,11 @@ public class Start {
 					cleanUp(false, false);
 					TextureManager.resetTextureManager();
 					s = new Start();
+				}if(Keyboard.getEventKey() == Keyboard.KEY_R){
+					TextureManager.reloadTextures();
+				}
+				if(Keyboard.getEventKey() == Keyboard.KEY_T){
+					d.updateEntity();
 				}
 			}
 		}
@@ -188,14 +190,17 @@ public class Start {
 		}
 		camera.processKeyboard(16, 1);
 	}
+	
 	private static void renderGL() {
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glLoadIdentity();
+		gui.render();
+
 		camera.applyTranslations();
 		
-		//d.render();
+		thePlayer.render();
 		//d2.render();
-		lamp.render();
+		//lamp.render();
 
 	}
 
@@ -210,6 +215,12 @@ public class Start {
 			cleanUp(true,true);
 		}
 	}
+	
+	//TODO
+	private static void setUpShaders(){
+		int shaderprogram = ShaderLoader.loadShaderPair("res/shaders/ao.vs", "res/shaders/ao.fs");
+	}
+	
 	private static void setUpMatrices() {
 		camera.applyPerspectiveMatrix();
 	}
@@ -226,10 +237,16 @@ public class Start {
 		glEnable(GL_TEXTURE_2D);
 
 	}
+	public static EulerCamera getCamera() {
+		return camera;
+	}
 	
 	private static void update() {
-		d.updateEntity();
-		d2.updateEntity();
+		gui.update();
+		
+		thePlayer.update();
+		//d.updateEntity();
+		//d2.updateEntity();
 		Display.update();
 		Display.sync(60);
 	}

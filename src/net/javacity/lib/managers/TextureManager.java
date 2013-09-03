@@ -20,8 +20,12 @@ public class TextureManager {
 	private static HashMap<String, Integer>textureSheetInt = new HashMap<String, Integer>();
 	
 	public static Texture loadTexture(String path){
+		return loadTexture(path, false);
+	}
+	
+	public static Texture loadTexture(String path, boolean forceLoad){
 		
-		if(textureSheet.get(path)!=null && textureSheet.containsKey(path)){
+		if(textureSheet.get(path)!=null && textureSheet.containsKey(path) && !forceLoad){
 			Texture texture = textureSheet.get(path);
 			return texture;
 		}
@@ -37,14 +41,29 @@ public class TextureManager {
 		return null;
 	}
 	
+	public static void reloadTextures(){
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, -1);
+		for(String key : textureSheet.keySet()){
+			loadTexture(key, true);
+		}
+		
+		for(String key : textureSheetInt.keySet()){
+			setupTextures(key, true);
+		}
+	}
+	
 	public static void resetTextureManager(){
 		textureSheet.clear();
 		textureSheetInt.clear();
 	}
 	
 	public static int setupTextures(String path) {
+		return setupTextures(path, false);
+	}
+	
+	public static int setupTextures(String path, boolean forceLoad) {
 		
-		if(textureSheetInt.get(path)!=null && textureSheetInt.containsKey(path)){
+		if(textureSheetInt.get(path)!=null && textureSheetInt.containsKey(path) && !forceLoad){
 			int texture = textureSheetInt.get(path);
 			return texture;
 		}

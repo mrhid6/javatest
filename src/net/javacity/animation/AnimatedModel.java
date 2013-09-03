@@ -1,18 +1,16 @@
 package net.javacity.animation;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.Vector;
 
 import net.javacity.lib.ResourceLocation;
+import net.javacity.lib.managers.Animations;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.ARBVertexBufferObject;
@@ -83,7 +81,7 @@ public class AnimatedModel {
 		return animationTime;
 	}
 	
-	public void syncAnimationTime(AnimationTime time){
+	public void setAnimationTime(AnimationTime time){
 		this.animationTime = time;
 	}
 	
@@ -644,10 +642,11 @@ public class AnimatedModel {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		animationTime = new AnimationTime( startTime+calcStartTime(20), endTime, timeToNextFrame, 0,18);
+		System.out.println(startTime);
+		animationTime = Animations.getAnimation("dwarf_start");
 	}
 	
-	public float calcStartTime(int startframe){
+	public float calcStartTime(float startframe){
 		return timeToNextFrame*startframe;
 	}
 	

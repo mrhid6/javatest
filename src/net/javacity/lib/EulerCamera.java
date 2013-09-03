@@ -1,6 +1,8 @@
 
 package net.javacity.lib;
 
+import net.javacity.world.Position;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GLContext;
@@ -411,6 +413,12 @@ public final class EulerCamera implements Camera {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+    
+    public void setPosition(Position location) {
+    	this.x = location.x;
+    	this.y = location.y;
+    	this.z = location.z;
     }
 
     /**
